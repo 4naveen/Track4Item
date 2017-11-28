@@ -91,7 +91,6 @@ public class LocationItemReminderService1 extends IntentService {
         locationItemArrayList=new ArrayList<>();
         pref = this.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         editor = pref.edit();
-AppConstant.itemArrayList=new ArrayList<>();
         mLastUpdateTime = "";
         createLocationCallback();
         createLocationRequest();
@@ -101,6 +100,8 @@ AppConstant.itemArrayList=new ArrayList<>();
     @Override
     protected void onHandleIntent(Intent intent) {
         itemArrayList=new ArrayList<>();
+        AppConstant.itemArrayList=new ArrayList<>();
+
         getItems(AppConstant.ITEM_LIST_URL);
     }
 
@@ -199,6 +200,7 @@ AppConstant.itemArrayList=new ArrayList<>();
                                         AppConstant.itemArrayList.add(item);
 
                                     }
+
                                 }
 
 
