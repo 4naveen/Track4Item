@@ -85,6 +85,7 @@ public class LocationItemReminderService1 extends IntentService {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
         mPreviousLocation=new Location("");
+        itemArrayList=new ArrayList<>();
         mLastUpdateTime = "";
         createLocationCallback();
         createLocationRequest();
@@ -127,7 +128,7 @@ public class LocationItemReminderService1 extends IntentService {
 
                             if (distance<200.0);
                             {
-                                locationItemArrayList.add(itemArrayList.get(i));
+                                //locationItemArrayList.add(itemArrayList.get(i));
                                 //locationManager.removeUpdates();
                                 // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
                                 sendNotification(itemArrayList.get(i).getItem_name());
@@ -189,7 +190,6 @@ public class LocationItemReminderService1 extends IntentService {
     }
 
     public  void getItems(String url) {
-        itemArrayList=new ArrayList<>();
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url,
                 new Response.Listener<String>() {
                     @Override
@@ -201,6 +201,9 @@ public class LocationItemReminderService1 extends IntentService {
                             int final_count=jsonObject.getInt("count");
                             System.out.println("next in location"+next_url);
                             JSONArray jsonArray = jsonObject.getJSONArray("results");
+                            if (itemArrayList.size()!=0){
+                                itemArrayList.clear();
+                            }
                             if (jsonArray.length()!=0){
                                 for (int i = 0; i < jsonArray.length(); i++) {
                                     JSONObject object = jsonArray.getJSONObject(i);
@@ -215,8 +218,6 @@ public class LocationItemReminderService1 extends IntentService {
                                         itemArrayList.add(item);
                                     }
                                 }
-                                System.out.println("item array size"+itemArrayList.size());
-
                             }
                             if (!next_url.equalsIgnoreCase("null")){
                                 getItems(next_url);
