@@ -117,6 +117,7 @@ public class LocationItemReminderService1 extends IntentService {
                     mPreviousLocation=mCurrentLocation;
                     if (itemArrayList.size()!=0){
                         if (AppConstant.list_size!=itemArrayList.size()){
+                            AppConstant.list_size=itemArrayList.size();
                             for (int i = 0; i < itemArrayList.size(); i++) {
                                 Location locationB = new Location(LocationManager.GPS_PROVIDER);
                                 locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
@@ -135,7 +136,6 @@ public class LocationItemReminderService1 extends IntentService {
                             }
                         }
                         AppConstant.list_size=itemArrayList.size();
-
                     }
                 }
                 System.out.println("mcurrentlocation"+mCurrentLocation+"mpreviouslocation:"+mPreviousLocation);
@@ -201,9 +201,9 @@ public class LocationItemReminderService1 extends IntentService {
                             int final_count=jsonObject.getInt("count");
                             System.out.println("next in location"+next_url);
                             JSONArray jsonArray = jsonObject.getJSONArray("results");
-                            if (itemArrayList.size()!=0){
+                          /*  if (itemArrayList.size()!=0){
                                 itemArrayList.clear();
-                            }
+                            }*/
                             if (jsonArray.length()!=0){
                                 for (int i = 0; i < jsonArray.length(); i++) {
                                     JSONObject object = jsonArray.getJSONObject(i);
