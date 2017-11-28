@@ -122,6 +122,37 @@ public class LocationItemReminderService1 extends IntentService {
                 System.out.println("mcurrentlocation:"+AppConstant.mCurrentLocation+"mpreviouslocation"+AppConstant.mPreviousLocation);
                 mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
                // System.out.println("latitude:"+mCurrentLocation.getLatitude()+"longitude:"+mCurrentLocation.getLongitude());
+                if (AppConstant.mCurrentLocation!=AppConstant.mPreviousLocation)
+                {
+                    System.out.println("location changed");
+                    AppConstant.mPreviousLocation=AppConstant.mCurrentLocation;
+                    System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
+                    if (AppConstant.itemArrayList.size()!=0){
+                        if (AppConstant.list_size!=AppConstant.itemArrayList.size()){
+                            AppConstant.list_size=AppConstant.itemArrayList.size();
+                            System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
+                            for (int i = 0; i < AppConstant.itemArrayList.size(); i++) {
+                                Location locationB = new Location(LocationManager.GPS_PROVIDER);
+                                locationB.setLatitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLati()));
+                                locationB.setLongitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLongi()));
+                                System.out.println("locationB"+locationB);
+                                float distance = AppConstant.mCurrentLocation.distanceTo(locationB);
+                                //System.out.println("distance"+distance);
+                                if (distance<(float) 200.0)
+                                {
+                                    //locationItemArrayList.add(itemArrayList.get(i));
+                                    //locationManager.removeUpdates();.
+                                    // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
+
+                                    sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
+                                    System.out.println("send notification");
+                                }
+                            }
+                        }
+                        // AppConstant.list_size=itemArrayList.size();
+                        //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
+                    }
+                }
             }
         };
     }
@@ -245,36 +276,6 @@ public class LocationItemReminderService1 extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         System.out.println("onDestroy called");
-        if (AppConstant.mCurrentLocation!=AppConstant.mPreviousLocation)
-        {
-            System.out.println("location changed");
-            AppConstant.mPreviousLocation=AppConstant.mCurrentLocation;
-           System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
-            if (AppConstant.itemArrayList.size()!=0){
-                if (AppConstant.list_size!=AppConstant.itemArrayList.size()){
-                    AppConstant.list_size=AppConstant.itemArrayList.size();
-                    System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
-                    for (int i = 0; i < AppConstant.itemArrayList.size(); i++) {
-                        Location locationB = new Location(LocationManager.GPS_PROVIDER);
-                        locationB.setLatitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLati()));
-                        locationB.setLongitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLongi()));
-                        System.out.println("locationB"+locationB);
-                        float distance = AppConstant.mCurrentLocation.distanceTo(locationB);
-                        //System.out.println("distance"+distance);
-                        if (distance<(float) 200.0)
-                        {
-                            //locationItemArrayList.add(itemArrayList.get(i));
-                            //locationManager.removeUpdates();.
-                            // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
-
-                            sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
-                            System.out.println("send notification");
-                        }
-                    }
-                }
-                // AppConstant.list_size=itemArrayList.size();
-                //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
-            }
-        }
+startLocationUpdates();
     }
 }
