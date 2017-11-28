@@ -59,7 +59,6 @@ public class LocationItemReminderService1 extends IntentService {
     private SettingsClient mSettingsClient;
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
-
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     private LocationSettingsRequest mLocationSettingsRequest;
 
@@ -72,8 +71,7 @@ public class LocationItemReminderService1 extends IntentService {
     private final static String KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string";
 
     ArrayList<Item> itemArrayList,locationItemArrayList;
-    String next_url;
-
+    private String next_url;
     public LocationItemReminderService1() {
         super("MyLocationService");
     }
@@ -94,7 +92,7 @@ public class LocationItemReminderService1 extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        getItems("http://ec2-35-154-135-19.ap-south-1.compute.amazonaws.com:8001/api/reminders/");
+        getItems(AppConstant.ITEM_LIST_URL);
     }
 
     private void createLocationCallback() {
@@ -117,23 +115,27 @@ public class LocationItemReminderService1 extends IntentService {
                 {
                     System.out.println("location changed");
                     mPreviousLocation=mCurrentLocation;
-
                     if (itemArrayList.size()!=0){
-                        for (int i = 0; i < itemArrayList.size(); i++) {
-                            Location locationB = new Location(LocationManager.GPS_PROVIDER);
-                            locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
-                            locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
-                            System.out.println("locationB"+locationB);
-                            float distance = mCurrentLocation.distanceTo(locationB);
-
-                            if (distance<200.0);
-                            {
-                                //locationItemArrayList.add(itemArrayList.get(i));
-                                //locationManager.removeUpdates();
-                                // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
-                                sendNotification(itemArrayList.get(i).getItem_name());
+                        if (AppConstant.list_size!=itemArrayList.size()){
+                            for (int i = 0; i < itemArrayList.size(); i++) {
+                                Location locationB = new Location(LocationManager.GPS_PROVIDER);
+                                locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
+                                locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
+                                System.out.println("locationB"+locationB);
+                                float distance = mCurrentLocation.distanceTo(locationB);
+                                //System.out.println("distance"+distance);
+                                if (distance<(float) 200.0)
+                                {
+                                    //locationItemArrayList.add(itemArrayList.get(i));
+                                    //locationManager.removeUpdates();
+                                    // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
+                                    sendNotification(itemArrayList.get(i).getItem_name());
+                                    System.out.println("send notification");
+                                }
                             }
                         }
+                        AppConstant.list_size=itemArrayList.size();
+
                     }
                 }
                 System.out.println("mcurrentlocation"+mCurrentLocation+"mpreviouslocation:"+mPreviousLocation);
@@ -162,12 +164,10 @@ public class LocationItemReminderService1 extends IntentService {
             return;
         }
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
-
     }
-
     private void sendNotification(String messageBody) {
         Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+       // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
                 PendingIntent.FLAG_ONE_SHOT);
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
