@@ -109,7 +109,6 @@ public class LocationItemReminderService1 extends IntentService {
                         .doubleValue();
                 mCurrentLocation.setLatitude(truncatedlatitude);
                 mCurrentLocation.setLongitude(truncatedlongitude);
-
                 System.out.println("mcurrentlocation:"+mCurrentLocation+"mpreviouslocation"+mPreviousLocation);
                 if (mCurrentLocation!=mPreviousLocation)
                 {
@@ -117,7 +116,7 @@ public class LocationItemReminderService1 extends IntentService {
                     mPreviousLocation=mCurrentLocation;
                     if (itemArrayList.size()!=0){
                         if (AppConstant.list_size!=itemArrayList.size()){
-                            AppConstant.list_size=itemArrayList.size();
+                            System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
                             for (int i = 0; i < itemArrayList.size(); i++) {
                                 Location locationB = new Location(LocationManager.GPS_PROVIDER);
                                 locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
@@ -136,6 +135,7 @@ public class LocationItemReminderService1 extends IntentService {
                             }
                         }
                         AppConstant.list_size=itemArrayList.size();
+                        //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
                     }
                 }
                 System.out.println("mcurrentlocation"+mCurrentLocation+"mpreviouslocation:"+mPreviousLocation);
@@ -190,6 +190,7 @@ public class LocationItemReminderService1 extends IntentService {
     }
 
     public  void getItems(String url) {
+
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url,
                 new Response.Listener<String>() {
                     @Override
