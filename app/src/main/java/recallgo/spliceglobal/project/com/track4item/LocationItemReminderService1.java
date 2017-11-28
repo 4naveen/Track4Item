@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -61,6 +62,8 @@ public class LocationItemReminderService1 extends IntentService {
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
     private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
     private LocationSettingsRequest mLocationSettingsRequest;
+    SharedPreferences pref;
+    SharedPreferences.Editor editor;
 
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -69,6 +72,8 @@ public class LocationItemReminderService1 extends IntentService {
     private final static String KEY_REQUESTING_LOCATION_UPDATES = "requesting-location-updates";
     private final static String KEY_LOCATION = "location";
     private final static String KEY_LAST_UPDATED_TIME_STRING = "last-updated-time-string";
+    public static final String PREF_NAME = "RecallPref";
+    int PRIVATE_MODE = 0;
 
     ArrayList<Item> itemArrayList,locationItemArrayList;
     private String next_url;
@@ -82,8 +87,11 @@ public class LocationItemReminderService1 extends IntentService {
         super.onCreate();
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
-        mPreviousLocation=new Location("");
+        AppConstant.mPreviousLocation=new Location("");
         locationItemArrayList=new ArrayList<>();
+        pref = this.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
+        editor = pref.edit();
+AppConstant.itemArrayList=new ArrayList<>();
         mLastUpdateTime = "";
         createLocationCallback();
         createLocationRequest();
@@ -93,7 +101,6 @@ public class LocationItemReminderService1 extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         itemArrayList=new ArrayList<>();
-
         getItems(AppConstant.ITEM_LIST_URL);
     }
 
@@ -102,50 +109,18 @@ public class LocationItemReminderService1 extends IntentService {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-                mCurrentLocation = locationResult.getLastLocation();
+                AppConstant.mCurrentLocation = locationResult.getLastLocation();
                 Double truncatedlatitude = BigDecimal.valueOf(locationResult.getLastLocation().getLatitude())
                         .setScale(4, RoundingMode.HALF_UP)
                         .doubleValue();
                 Double truncatedlongitude = BigDecimal.valueOf(locationResult.getLastLocation().getLongitude())
                         .setScale(4, RoundingMode.HALF_UP)
                         .doubleValue();
-                mCurrentLocation.setLatitude(truncatedlatitude);
-                mCurrentLocation.setLongitude(truncatedlongitude);
-                System.out.println("mcurrentlocation:"+mCurrentLocation+"mpreviouslocation"+mPreviousLocation);
-                if (mCurrentLocation!=mPreviousLocation)
-                {
-                    System.out.println("location changed");
-                    mPreviousLocation=mCurrentLocation;
-                    System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
-                    if (itemArrayList.size()!=0){
-                        if (AppConstant.list_size!=itemArrayList.size()){
-                            AppConstant.list_size=itemArrayList.size();
-
-                            System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
-                            for (int i = 0; i < itemArrayList.size(); i++) {
-                                Location locationB = new Location(LocationManager.GPS_PROVIDER);
-                                locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
-                                locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
-                                System.out.println("locationB"+locationB);
-                                float distance = mCurrentLocation.distanceTo(locationB);
-                                //System.out.println("distance"+distance);
-                                if (distance<(float) 200.0)
-                                {
-                                    //locationItemArrayList.add(itemArrayList.get(i));
-                                    //locationManager.removeUpdates();
-                                    // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
-                                    sendNotification(itemArrayList.get(i).getItem_name(),i);
-                                    System.out.println("send notification");
-                                }
-                            }
-                        }
-                       // AppConstant.list_size=itemArrayList.size();
-                        //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
-                    }
-                }
-                System.out.println("mcurrentlocation"+mCurrentLocation+"mpreviouslocation:"+mPreviousLocation);
+                AppConstant.mCurrentLocation.setLatitude(truncatedlatitude);
+                AppConstant.mCurrentLocation.setLongitude(truncatedlongitude);
+                System.out.println("mcurrentlocation:"+AppConstant.mCurrentLocation+"mpreviouslocation"+AppConstant.mPreviousLocation);
                 mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-                System.out.println("latitude:"+mCurrentLocation.getLatitude()+"longitude:"+mCurrentLocation.getLongitude());
+               // System.out.println("latitude:"+mCurrentLocation.getLatitude()+"longitude:"+mCurrentLocation.getLongitude());
             }
         };
     }
@@ -183,6 +158,7 @@ public class LocationItemReminderService1 extends IntentService {
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
+
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             notificationBuilder.setSmallIcon(R.drawable.title_img);
             notificationBuilder.setColor(getResources().getColor(R.color.bg_screen3));
@@ -193,7 +169,6 @@ public class LocationItemReminderService1 extends IntentService {
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(id, notificationBuilder.build());
     }
-
     public  void getItems(String url) {
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url,
                 new Response.Listener<String>() {
@@ -221,15 +196,19 @@ public class LocationItemReminderService1 extends IntentService {
                                         item.setItem_name(object.getString("name"));
                                         item.setDate_created(object.getString("date_created"));
                                         // System.out.println("date"+dates[0].substring(0,10));
-                                        itemArrayList.add(item);
+                                        AppConstant.itemArrayList.add(item);
+
                                     }
                                 }
+
+
                             }
                             if (!next_url.equalsIgnoreCase("null")){
                                 getItems(next_url);
                             }
                             else {
-                                System.out.println("item array size in call"+itemArrayList.size());
+                                System.out.println("item array size in call"+AppConstant.itemArrayList.size());
+
                                 startLocationUpdates();
                             }
                         }
@@ -258,5 +237,42 @@ public class LocationItemReminderService1 extends IntentService {
             }
         } ;
         MyVolleySingleton.getInstance(this).getRequestQueue().add(stringRequest);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        System.out.println("onDestroy called");
+        if (AppConstant.mCurrentLocation!=AppConstant.mPreviousLocation)
+        {
+            System.out.println("location changed");
+            AppConstant.mPreviousLocation=AppConstant.mCurrentLocation;
+           System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
+            if (AppConstant.itemArrayList.size()!=0){
+                if (AppConstant.list_size!=AppConstant.itemArrayList.size()){
+                    AppConstant.list_size=AppConstant.itemArrayList.size();
+                    System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
+                    for (int i = 0; i < AppConstant.itemArrayList.size(); i++) {
+                        Location locationB = new Location(LocationManager.GPS_PROVIDER);
+                        locationB.setLatitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLati()));
+                        locationB.setLongitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLongi()));
+                        System.out.println("locationB"+locationB);
+                        float distance = AppConstant.mCurrentLocation.distanceTo(locationB);
+                        //System.out.println("distance"+distance);
+                        if (distance<(float) 200.0)
+                        {
+                            //locationItemArrayList.add(itemArrayList.get(i));
+                            //locationManager.removeUpdates();.
+                            // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
+
+                            sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
+                            System.out.println("send notification");
+                        }
+                    }
+                }
+                // AppConstant.list_size=itemArrayList.size();
+                //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
+            }
+        }
     }
 }
