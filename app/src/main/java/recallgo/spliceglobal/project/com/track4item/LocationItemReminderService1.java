@@ -129,7 +129,7 @@ public class LocationItemReminderService1 extends IntentService {
                                     //locationItemArrayList.add(itemArrayList.get(i));
                                     //locationManager.removeUpdates();
                                     // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
-                                    sendNotification(itemArrayList.get(i).getItem_name());
+                                    sendNotification(itemArrayList.get(i).getItem_name(),i);
                                     System.out.println("send notification");
                                 }
                             }
@@ -165,7 +165,7 @@ public class LocationItemReminderService1 extends IntentService {
         }
         mFusedLocationClient.removeLocationUpdates(mLocationCallback);
     }
-    private void sendNotification(String messageBody) {
+    private void sendNotification(String messageBody,int id) {
         Intent intent = new Intent(this, MainActivity.class);
        // intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
@@ -173,7 +173,7 @@ public class LocationItemReminderService1 extends IntentService {
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Today Reminder")
+                .setContentTitle("Reminder")
                 .setContentText(messageBody)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -186,7 +186,7 @@ public class LocationItemReminderService1 extends IntentService {
         }
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notificationBuilder.build());
+        notificationManager.notify(id, notificationBuilder.build());
     }
 
     public  void getItems(String url) {
