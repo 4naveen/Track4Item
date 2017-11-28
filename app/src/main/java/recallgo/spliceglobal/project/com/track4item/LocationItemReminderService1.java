@@ -83,7 +83,7 @@ public class LocationItemReminderService1 extends IntentService {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
         mPreviousLocation=new Location("");
-        itemArrayList=new ArrayList<>();
+        locationItemArrayList=new ArrayList<>();
         mLastUpdateTime = "";
         createLocationCallback();
         createLocationRequest();
@@ -92,6 +92,8 @@ public class LocationItemReminderService1 extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        itemArrayList=new ArrayList<>();
+
         getItems(AppConstant.ITEM_LIST_URL);
     }
 
@@ -114,8 +116,11 @@ public class LocationItemReminderService1 extends IntentService {
                 {
                     System.out.println("location changed");
                     mPreviousLocation=mCurrentLocation;
+                    System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
                     if (itemArrayList.size()!=0){
                         if (AppConstant.list_size!=itemArrayList.size()){
+                            AppConstant.list_size=itemArrayList.size();
+
                             System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
                             for (int i = 0; i < itemArrayList.size(); i++) {
                                 Location locationB = new Location(LocationManager.GPS_PROVIDER);
@@ -134,7 +139,7 @@ public class LocationItemReminderService1 extends IntentService {
                                 }
                             }
                         }
-                        AppConstant.list_size=itemArrayList.size();
+                       // AppConstant.list_size=itemArrayList.size();
                         //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
                     }
                 }
@@ -190,12 +195,12 @@ public class LocationItemReminderService1 extends IntentService {
     }
 
     public  void getItems(String url) {
-
         StringRequest stringRequest = new StringRequest(Request.Method.GET,url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         try {
+
                             System.out.println("response"+response);
                             JSONObject jsonObject=new JSONObject(response);
                             next_url=jsonObject.getString("next");
@@ -224,7 +229,7 @@ public class LocationItemReminderService1 extends IntentService {
                                 getItems(next_url);
                             }
                             else {
-                                System.out.println("item array size"+itemArrayList.size());
+                                System.out.println("item array size in call"+itemArrayList.size());
                                 startLocationUpdates();
                             }
                         }
@@ -248,7 +253,6 @@ public class LocationItemReminderService1 extends IntentService {
                 HashMap<String,String> header=new HashMap<>();
                 header.put("Content-Type", "application/json; charset=utf-8");
                 header.put("Authorization","Token aa5c12b3ebac6d122304d9b6c0713ae39863d938");
-
                 // header.put("Content-Type", "application/x-www-form-urlencoded");
                 return header;
             }
