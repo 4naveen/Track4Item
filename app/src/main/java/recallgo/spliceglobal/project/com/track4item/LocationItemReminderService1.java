@@ -53,7 +53,7 @@ import java.util.Map;
 public class LocationItemReminderService1 extends IntentService {
     private Location mCurrentLocation,mPreviousLocation;
     private LocationCallback mLocationCallback;
-    private Boolean mRequestingLocationUpdates;
+    private Boolean mRequestingLocationUpdates=false;
     private String mLastUpdateTime;
     private FusedLocationProviderClient mFusedLocationClient;
     private LocationRequest mLocationRequest;
@@ -64,7 +64,7 @@ public class LocationItemReminderService1 extends IntentService {
     private LocationSettingsRequest mLocationSettingsRequest;
     SharedPreferences pref;
     SharedPreferences.Editor editor;
-
+    boolean itemNotFound=false;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
@@ -89,6 +89,8 @@ public class LocationItemReminderService1 extends IntentService {
         mSettingsClient = LocationServices.getSettingsClient(this);
         AppConstant.mPreviousLocation=new Location("");
         locationItemArrayList=new ArrayList<>();
+        AppConstant.itemArrayList=new ArrayList<>();
+        AppConstant.shownList=new ArrayList<>();
         pref = this.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         editor = pref.edit();
         mLastUpdateTime = "";
@@ -100,7 +102,6 @@ public class LocationItemReminderService1 extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         itemArrayList=new ArrayList<>();
-        AppConstant.itemArrayList=new ArrayList<>();
 
         getItems(AppConstant.ITEM_LIST_URL);
     }
@@ -123,12 +124,14 @@ public class LocationItemReminderService1 extends IntentService {
                 mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
                // System.out.println("latitude:"+mCurrentLocation.getLatitude()+"longitude:"+mCurrentLocation.getLongitude());
                 if (AppConstant.mCurrentLocation!=AppConstant.mPreviousLocation)
-                {
+                {mRequestingLocationUpdates=true;
                     System.out.println("location changed");
                     AppConstant.mPreviousLocation=AppConstant.mCurrentLocation;
                     System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
                     if (AppConstant.itemArrayList.size()!=0){
-                        if (AppConstant.list_size!=AppConstant.itemArrayList.size()){
+                        AppConstant.counter++;
+                        System.out.println("counter"+AppConstant.counter);
+                        if (AppConstant.counter==1){
                             AppConstant.list_size=AppConstant.itemArrayList.size();
                             System.out.println("stored size"+AppConstant.list_size+"item array size"+AppConstant.itemArrayList.size());
                             for (int i = 0; i < AppConstant.itemArrayList.size(); i++) {
@@ -145,12 +148,47 @@ public class LocationItemReminderService1 extends IntentService {
                                     // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
 
                                     sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
+                                    AppConstant.shownList.add(String.valueOf(AppConstant.itemArrayList.get(i).getId()));
                                     System.out.println("send notification");
                                 }
                             }
+                            System.out.println("shownlist size"+AppConstant.shownList.size());
                         }
-                        // AppConstant.list_size=itemArrayList.size();
-                        //System.out.println("stored size"+AppConstant.list_size+"item array size"+itemArrayList.size());
+                        if (AppConstant.counter>1){
+                            for (int i = 0; i < AppConstant.itemArrayList.size(); i++) {
+                                Location locationB = new Location(LocationManager.GPS_PROVIDER);
+                                locationB.setLatitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLati()));
+                                locationB.setLongitude(Double.parseDouble(AppConstant.itemArrayList.get(i).getLongi()));
+                                System.out.println("locationB"+locationB);
+                                float distance = AppConstant.mCurrentLocation.distanceTo(locationB);
+                                //System.out.println("distance"+distance);
+                                if (distance<(float) 200.0)
+                                {
+                                    //locationItemArrayList.add(itemArrayList.get(i));
+                                    //locationManager.removeUpdates();.
+                                    // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
+
+                                   /* sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
+                                    AppConstant.shownList.add(AppConstant.itemArrayList.get(i).getDate_created());
+                                    System.out.println("send notification");*/
+                                    for (int j=0;j<AppConstant.shownList.size();j++){
+                                        System.out.println("shownlist item id "+AppConstant.shownList.get(j)+"item id"+String.valueOf(AppConstant.itemArrayList.get(i).getId()));
+                                        if (!AppConstant.shownList.get(j).equalsIgnoreCase(String.valueOf(AppConstant.itemArrayList.get(i).getId()))){
+                                            itemNotFound=true;
+                                        }
+                                    }
+                                    if (itemNotFound){
+
+                                        AppConstant.shownList.add(String.valueOf(AppConstant.itemArrayList.get(i).getId()));
+                                        AppConstant.counter=0;
+                                       // sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
+                                        System.out.println("send notification");
+                                    }
+
+                                }
+                            }
+
+                        }
                     }
                 }
             }
@@ -227,6 +265,7 @@ public class LocationItemReminderService1 extends IntentService {
                                         item.setLongi(object.getString("long"));
                                         item.setItem_name(object.getString("name"));
                                         item.setDate_created(object.getString("date_created"));
+                                        item.setId(object.getInt("id"));
                                         // System.out.println("date"+dates[0].substring(0,10));
                                         AppConstant.itemArrayList.add(item);
 
@@ -276,6 +315,6 @@ public class LocationItemReminderService1 extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         System.out.println("onDestroy called");
-startLocationUpdates();
+        stopLocationUpdates();
     }
 }
