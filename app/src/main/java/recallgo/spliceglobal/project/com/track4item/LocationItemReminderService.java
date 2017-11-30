@@ -53,6 +53,7 @@ public class LocationItemReminderService extends IntentService implements Google
     SharedPreferences pref;
     int PRIVATE_MODE = 0;
     SharedPreferences.Editor editor;
+    boolean itemNotFound;
     public static final String PREF_NAME = "RecallPref";
     public LocationItemReminderService() {
         super("");
@@ -62,6 +63,7 @@ public class LocationItemReminderService extends IntentService implements Google
         super.onCreate();
         itemArrayList=new ArrayList<>();
         locationItemArrayList=new ArrayList<>();
+        //AppConstant.shownList=new ArrayList<>();
         pref = this.getSharedPreferences(PREF_NAME, PRIVATE_MODE);
         mPreviousLocation=new Location("");
         editor = pref.edit();
@@ -75,13 +77,14 @@ public class LocationItemReminderService extends IntentService implements Google
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
         getItems("http://ec2-35-154-135-19.ap-south-1.compute.amazonaws.com:8001/api/reminders");
     }
 
-    private void sendNotification(String messageBody) {
+    private void sendNotification(String messageBody,int i) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,
@@ -89,7 +92,7 @@ public class LocationItemReminderService extends IntentService implements Google
         Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("Today Reminder")
+                .setContentTitle("Reminder")
                 .setContentText(messageBody)
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
@@ -102,7 +105,7 @@ public class LocationItemReminderService extends IntentService implements Google
         }
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notificationBuilder.build());
+        notificationManager.notify(i, notificationBuilder.build());
     }
 
     public  void getItems(String url) {
@@ -123,7 +126,6 @@ public class LocationItemReminderService extends IntentService implements Google
                                     Item item = new Item();
                                     if (!(object.getString("lat").equalsIgnoreCase("null")&&object.getString("long").equalsIgnoreCase("null")))
                                     {
-
                                         item.setLati(object.getString("lat"));
                                         item.setLongi(object.getString("long"));
                                         item.setItem_name(object.getString("name"));
@@ -182,6 +184,7 @@ public class LocationItemReminderService extends IntentService implements Google
 
     @Override
     public void onLocationChanged(Location location) {
+        AppConstant.shownList=new ArrayList<>();
 
         Double truncatedlatitude = BigDecimal.valueOf(location.getLatitude())
                 .setScale(4, RoundingMode.HALF_UP)
@@ -200,18 +203,49 @@ public class LocationItemReminderService extends IntentService implements Google
             System.out.println("location changed");
             mPreviousLocation=locationA;
                 if (itemArrayList.size()!=0){
-                    for (int i = 0; i < itemArrayList.size(); i++) {
-                        Location locationB = new Location(LocationManager.GPS_PROVIDER);
-                        locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
-                        locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
-                        System.out.println("locationB"+locationB);
-                        float distance = locationA.distanceTo(locationB);
-                        if (distance<200.0);
-                        {
-                            locationItemArrayList.add(itemArrayList.get(i));
-                            //locationManager.removeUpdates();
-                           // Toast.makeText(getApplicationContext(),itemArrayList.get(i).getItem_name(), Toast.LENGTH_SHORT).show();
-                            sendNotification(itemArrayList.get(i).getItem_name());
+                    AppConstant.counter++;
+                    if (AppConstant.counter==1) {
+
+                        for (int i = 0; i < itemArrayList.size(); i++) {
+                            Location locationB = new Location(LocationManager.GPS_PROVIDER);
+                            locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
+                            locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
+                            System.out.println("locationB" + locationB);
+                            float distance = locationA.distanceTo(locationB);
+                            if (distance < 200.0) ;
+                            {
+                                sendNotification(itemArrayList.get(i).getItem_name(),i);
+                                AppConstant.shownList.add(String.valueOf(AppConstant.itemArrayList.get(i).getId()));
+                                System.out.println("send notification");
+                            }
+
+                        }
+                    }
+                    if (AppConstant.counter>1){
+                        for (int i = 0; i < itemArrayList.size(); i++) {
+                            Location locationB = new Location(LocationManager.GPS_PROVIDER);
+                            locationB.setLatitude(Double.parseDouble(itemArrayList.get(i).getLati()));
+                            locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
+                            System.out.println("locationB" + locationB);
+                            float distance = locationA.distanceTo(locationB);
+                            if (distance < 200.0) ;
+                            {
+                                AppConstant.shownList.add(String.valueOf(AppConstant.itemArrayList.get(i).getId()));
+                                System.out.println("send notification");
+                                for (int j=0;j<AppConstant.shownList.size();j++){
+                                    System.out.println("shownlist item id "+AppConstant.shownList.get(j)+"item id"+String.valueOf(AppConstant.itemArrayList.get(i).getId()));
+                                    if (!AppConstant.shownList.get(j).equalsIgnoreCase(String.valueOf(AppConstant.itemArrayList.get(i).getId()))){
+                                        itemNotFound=true;
+                                    }
+                                }
+                                if (itemNotFound){
+                                    AppConstant.shownList.add(String.valueOf(AppConstant.itemArrayList.get(i).getId()));
+                                    // AppConstant.counter=0;
+                                    sendNotification(itemArrayList.get(i).getItem_name(),i);
+                                    System.out.println("send notification");
+                                }
+                            }
+
                         }
                     }
             }

@@ -6,7 +6,15 @@ package recallgo.spliceglobal.project.com.track4item;
 
 public class Item {
     int count,id,list_id;
-    String item_name,date_time,category,next,qty,list_name,store_name,brand_name,repeat_type,store_id,brand_id,lati,longi,time,date_created,date_updated;
+    String item_name,date_time,category,next,qty,list_name,store_name,brand_name,repeat_type,store_id,brand_id,lati,longi,time,date_created,date_updated,entry;
+
+    public String getEntry() {
+        return entry;
+    }
+
+    public void setEntry(String entry) {
+        this.entry = entry;
+    }
 
     public String getTime() {
         return time;

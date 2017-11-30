@@ -14,6 +14,6 @@ public class AppConstant {
     public static int list_size=0;
     public static ArrayList<Item> itemArrayList;
     public static  Location mCurrentLocation,mPreviousLocation;
-    public static ArrayList<String>shownList;
+    public static ArrayList<String>shownList=new ArrayList<>();
     public static int counter=0;
 }

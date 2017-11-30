@@ -178,16 +178,13 @@ public class LocationItemReminderService1 extends IntentService {
                                         }
                                     }
                                     if (itemNotFound){
-
                                         AppConstant.shownList.add(String.valueOf(AppConstant.itemArrayList.get(i).getId()));
-                                        AppConstant.counter=0;
-                                       // sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
+                                       // AppConstant.counter=0;
+                                        sendNotification(AppConstant.itemArrayList.get(i).getItem_name(),i);
                                         System.out.println("send notification");
                                     }
-
                                 }
                             }
-
                         }
                     }
                 }

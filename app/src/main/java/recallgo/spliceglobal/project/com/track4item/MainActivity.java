@@ -13,13 +13,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        String alarm = Context.ALARM_SERVICE;
-        AlarmManager am = (AlarmManager) getSystemService(alarm);
+        AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent("REFRESH_THIS");
-        PendingIntent pi = PendingIntent.getBroadcast(this, 123456789, intent, 0);
+        PendingIntent pi = PendingIntent.getBroadcast(this,123456789,intent, 0);
         int type = AlarmManager.RTC_WAKEUP;
         long interval = 1000 * 50;
         System.out.println("current milli sec"+System.currentTimeMillis());
         am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
+
     }
 }
