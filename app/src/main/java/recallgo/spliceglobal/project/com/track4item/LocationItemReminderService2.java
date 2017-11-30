@@ -146,8 +146,9 @@ public class LocationItemReminderService2 extends IntentService {
                                 locationB.setLongitude(Double.parseDouble(itemArrayList.get(i).getLongi()));
                                 String entry=itemArrayList.get(i).getEntry();
                                 //System.out.println("locationB"+locationB);
+                                System.out.println("entry"+entry);
                                 float distance = mCurrentLocation.distanceTo(locationB);
-                                //System.out.println("distance"+distance);
+                                System.out.println("distance"+distance);
 
                                 if (entry.equalsIgnoreCase("Arriving")){
                                     if (distance<(float) 200.0)
@@ -171,7 +172,7 @@ public class LocationItemReminderService2 extends IntentService {
                                                     Intent intent = new Intent("REFRESH_THIS");
                                                     PendingIntent pi = PendingIntent.getBroadcast(LocationItemReminderService2.this,123456789,intent, 0);
                                                     int type = AlarmManager.RTC_WAKEUP;
-                                                    long interval = 1000 * 50;
+                                                    long interval = 1000 * 50*60*60*24;
                                                     System.out.println("current milli sec"+System.currentTimeMillis());
                                                     am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
 
@@ -179,18 +180,46 @@ public class LocationItemReminderService2 extends IntentService {
                                                 }
                                                 case 3:{
                                                     repeat_alarm="Weekly";
+                                                    AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                                                    Intent intent = new Intent("REFRESH_THIS");
+                                                    PendingIntent pi = PendingIntent.getBroadcast(LocationItemReminderService2.this,123456789,intent, 0);
+                                                    int type = AlarmManager.RTC_WAKEUP;
+                                                    long interval = 1000 * 50*60*60*24*7;
+                                                    System.out.println("current milli sec"+System.currentTimeMillis());
+                                                    am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
                                                     break;
                                                 }
                                                 case 4:{
                                                     repeat_alarm="Every two Week";
+                                                    AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                                                    Intent intent = new Intent("REFRESH_THIS");
+                                                    PendingIntent pi = PendingIntent.getBroadcast(LocationItemReminderService2.this,123456789,intent, 0);
+                                                    int type = AlarmManager.RTC_WAKEUP;
+                                                    long interval = 1000 * 50*60*60*24*14;
+                                                    System.out.println("current milli sec"+System.currentTimeMillis());
+                                                    am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
                                                     break;
                                                 }
                                                 case 5:{
                                                     repeat_alarm="Monthly";
+                                                    AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                                                    Intent intent = new Intent("REFRESH_THIS");
+                                                    PendingIntent pi = PendingIntent.getBroadcast(LocationItemReminderService2.this,123456789,intent, 0);
+                                                    int type = AlarmManager.RTC_WAKEUP;
+                                                    long interval = 1000 * 50*60*60*24*30;
+                                                    System.out.println("current milli sec"+System.currentTimeMillis());
+                                                    am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
                                                     break;
                                                 }
                                                 case 6:{
                                                     repeat_alarm="Yearly";
+                                                    AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                                                    Intent intent = new Intent("REFRESH_THIS");
+                                                    PendingIntent pi = PendingIntent.getBroadcast(LocationItemReminderService2.this,123456789,intent, 0);
+                                                    int type = AlarmManager.RTC_WAKEUP;
+                                                    long interval = 1000 * 50*60*60*24*30*12;
+                                                    System.out.println("current milli sec"+System.currentTimeMillis());
+                                                    am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
                                                     break;
                                                 }
                                             }
@@ -214,15 +243,15 @@ public class LocationItemReminderService2 extends IntentService {
                                                     break;
                                                 }
                                                 case 2:{
-                                                    repeat_alarm="Daily";
-
+                                                    repeat_alarm="Daily";/*
                                                     AlarmManager am = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
                                                     Intent intent = new Intent("REFRESH_THIS");
                                                     PendingIntent pi = PendingIntent.getBroadcast(LocationItemReminderService2.this,123456789,intent, 0);
                                                     int type = AlarmManager.RTC_WAKEUP;
                                                     long interval = 1000 * 50;
                                                     System.out.println("current milli sec"+System.currentTimeMillis());
-                                                    am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);
+                                                    am.setInexactRepeating(type, System.currentTimeMillis(),interval,pi);*/
+
                                                     break;
                                                 }
                                                 case 3:{

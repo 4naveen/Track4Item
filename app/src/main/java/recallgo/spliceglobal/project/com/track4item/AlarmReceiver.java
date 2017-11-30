@@ -19,11 +19,10 @@ public class AlarmReceiver extends BroadcastReceiver {
         if (isMyServiceRunning(this.context, LocationItemReminderService.class)) {
             System.out.println("alredy running no need to start again");
 
-
-            Intent background2 = new Intent(context, LocationItemReminderService.class);
+            Intent background2 = new Intent(context, LocationItemReminderService2.class);
             context.startService(background2);
         } else {
-            Intent background2 = new Intent(context, LocationItemReminderService.class);
+            Intent background2 = new Intent(context, LocationItemReminderService2.class);
             context.startService(background2);
         }
     }
